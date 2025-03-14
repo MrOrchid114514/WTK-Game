@@ -1,7 +1,18 @@
 fun main(args: Array<String>) {
-    println("Hello World!")
+    GeneralManager.createGenerals(
+        lords = 1,
+        loyalists = 1,
+        spies = 1,
+        rebels = 1
+    )
+    println("Total number of players: ${GeneralManager.list.size}")
 
-    // Try adding program arguments via Run/Debug configuration.
-    // Learn more about running applications: https://www.jetbrains.com/help/idea/running-applications.html.
-    println("Program arguments: ${args.joinToString()}")
+    GeneralManager.list.lastOrNull()?.let {
+        println("${it.name} being placed the Acedia card.")
+    }
+
+    repeat(2) {
+        println("\nRound ${it + 1}:")
+        GeneralManager.list.forEach { it.playTurn() }
+    }
 }
