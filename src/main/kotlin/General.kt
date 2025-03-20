@@ -47,7 +47,15 @@ interface Player {
         val chance = (1..100).random()
         return chance <= 15 * numOfCards
     }
+    fun hasPeachCard(): Boolean {
+        val chance = (1..100).random()
+        return chance <= 20 * numOfCards
+    }
 
+    fun hasWineCard(): Boolean {
+        val chance = (1..100).random()
+        return chance <= 15 * numOfCards
+    }
     fun beingAttacked() {
         println("$name is being attacked.")
         val dodgeSuccess = hasDodgeCard()
@@ -56,11 +64,59 @@ interface Player {
             currentHP--
             println("$name couldn't dodge the attack and loses 1 HP. Current HP: $currentHP")
         }
+        if(currentHP <= 0){
+            if(hasPeachCard()){
+                println("$name use Peach!")
+                currentHP++
+                numOfCards--
+            }
+            if(hasWineCard()){
+                println("$name use Wine!")
+                currentHP++
+                numOfCards--
+            }
+        }
     }
-
-    fun dodgeAttack(): Boolean {
+    fun beingWineAttacked() {
+        println("$name is being attacked.")
+        val dodgeSuccess = hasDodgeCard()
+        (strategy as? LordStrategy)?.notifyObservers(dodgeSuccess)
+        if (!dodgeSuccess) {
+            currentHP = currentHP -2
+            println("$name couldn't dodge the attack and loses 1 HP. Current HP: $currentHP")
+        }
+        if(currentHP <= 0){
+            if(usePeach()){
+                println("$name use Peach!")
+            }
+            if(useWine()){
+                println("$name use Wine!")
+                currentHP++
+            }
+        }
+    }
+    fun dodgeAttack(): Boolean  {
         println("$name dodged the attack!")
         return true
+    }
+
+    fun usePeach():Boolean{
+        if(currentHP < maxHP){
+            if(hasPeachCard()){
+                currentHP++
+                numOfCards--
+                return true
+            }
+        }
+        return false
+    }
+
+    fun useWine(): Boolean{
+        if(hasWineCard()){
+            numOfCards--
+            return true
+        }
+        return false
     }
 
     fun playTurn() {
@@ -77,12 +133,21 @@ interface Player {
     }
 
     fun playPhase() {
-        if (hasAttackCard()) {
-            val target = strategy.whomToAttack(this, GeneralManager.list.filter { it != this })
-            if (target != null) {
-                println("$name spends a card to attack ${target.identity}, ${target.name}")
-                numOfCards--
-                target.beingAttacked()
+        if (!hasAttackCard()) {
+            if (useWine()) {
+                val target = strategy.whomToAttack(this, GeneralManager.list.filter { it != this })
+                if (target != null) {
+                    println("$name spends a card to attack ${target.identity}, ${target.name}")
+                    numOfCards--
+                    target.beingAttacked()
+                }
+            } else {
+                val target = strategy.whomToAttack(this, GeneralManager.list.filter { it != this })
+                if (target != null) {
+                    println("$name spends a card to attack ${target.identity}, ${target.name}")
+                    numOfCards--
+                    target.beingWineAttacked()
+                }
             }
         }
     }
