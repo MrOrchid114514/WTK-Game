@@ -183,6 +183,29 @@ class ZHOUYu(name: String) : General(name, 3, Identity.SPY, SpyStrategy()) {
     }
 }
 
+class ZHANGFei(name: String) : General(name, 4, Identity.REBEL, RebelStrategy()) {
+
+    override fun playPhase() {
+        // 咆哮：出牌阶段可以无限出杀（只要手牌足够）
+        var attackCount = 0
+        while (numOfCards > 0) { // 只要还有手牌就能继续攻击
+            val target = strategy.whomToAttack(this, GeneralManager.list.filter { it != this })
+            if (target == null) break
+
+            println("[Roar] $name uses a card to attack ${target.name}")
+            numOfCards-- // 每次攻击消耗一张手牌
+            target.beingAttacked()
+            attackCount++
+        }
+    }
+
+    override fun hasAttackCard(): Boolean {
+        // 覆盖父类逻辑，强制认为只要有手牌就能出杀
+        return numOfCards > 0
+    }
+}
+
 class SimaYi(name: String) : WeiGeneral(name, 3)
 class XiahouDun(name: String) : WeiGeneral(name, 4)
 class XiahouYuan(name: String) : WeiGeneral(name, 4)
+
