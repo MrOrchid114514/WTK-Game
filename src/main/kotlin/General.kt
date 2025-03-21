@@ -409,6 +409,39 @@ class GANNing(name: String) : General(name, 4, Identity.REBEL, RebelStrategy()) 
     }
 }
 
+class LVMeng(name: String) : General(name, 4, Identity.LOYALIST, LoyalistStrategy()) {
+    private var killUsed = false // 标记本回合是否使用过【杀】
+
+    override fun playPhase() {
+        killUsed = false // 重置标记
+        super.playPhase()
+
+        // 检测是否使用过杀
+        if (hasAttackCard()) {
+            val target = strategy.whomToAttack(this, GeneralManager.list.filter { it != this })
+            target?.let { killUsed = true }
+        }
+    }
+
+    override fun discardPhase() {
+        if (!killUsed) {
+            println("[Restraint] $name skips discard phase due to not using Kill")
+            return // 跳过弃牌阶段
+        }
+        super.discardPhase() // 正常执行弃牌逻辑
+    }
+
+    override fun hasAttackCard(): Boolean {
+        // 覆盖基础概率计算，提高杀的概率
+        val enhancedChance = (25 * numOfCards).coerceAtMost(90)
+        return (1..100).random() <= enhancedChance
+    }
+
+    override fun toString(): String {
+        return "$name, a ${identity.name.lowercase()} (Restraint)"
+    }
+}
+
 //class ZHOUYu(name: String) : WeiGeneral(name, 4) {
 //    override fun judgmentPhase() {
 //        println("$name activates [Captivating Beauty]")
