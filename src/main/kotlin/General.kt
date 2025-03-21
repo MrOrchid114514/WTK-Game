@@ -205,11 +205,11 @@ class LIUBei(name: String) : General(name, 1, Identity.LORD, LiuBeiStrategy()) {
 
 class SUNQuan(name: String) : General(name, 5, Identity.LORD, LordStrategy()) {}
 
-class SimaYi(name: String) : WeiGeneral(name, 3)
+class SIMaYi(name: String) : WeiGeneral(name, 3)
 
-class XiahouDun(name: String) : WeiGeneral(name, 4)
+class XIAHouDun(name: String) : WeiGeneral(name, 4)
 
-class XuChu(name: String) : WeiGeneral(name, 4) {
+class XUChu(name: String) : WeiGeneral(name, 4) {
     override fun playPhase() {
         super.playPhase()
         if (hasAttackCard()) {
