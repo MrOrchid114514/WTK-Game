@@ -209,6 +209,32 @@ class SIMaYi(name: String) : WeiGeneral(name, 3)
 
 class XIAHouDun(name: String) : WeiGeneral(name, 4)
 
+class ZHANGLiao(name: String) : WeiGeneral(name, 4) {
+    override fun drawPhase() {
+        // 放弃正常摸牌，发动突袭
+        println("$name activates [Raid]")
+
+        val validTargets = GeneralManager.list
+            .filter { it != this && it.numOfCards > 0 }
+            .shuffled()
+            .take(2)  // 随机选择最多2名有手牌的角色
+
+        validTargets.forEach { target ->
+            target.numOfCards--
+            numOfCards++
+            println("[Raid] Stole 1 card from ${target.name}") // 统一技能提示格式
+        }
+
+        if (validTargets.isEmpty()) {
+            println("[Raid] No valid targets found") // 处理空目标情况
+        }
+    }
+
+    override fun toString(): String {
+        return "$name, a ${identity.name.lowercase()} (Raid)" // 显示技能标识
+    }
+}
+
 class XUChu(name: String) : WeiGeneral(name, 4) {
     override fun playPhase() {
         super.playPhase()
