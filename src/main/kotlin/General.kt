@@ -442,6 +442,40 @@ class LVMeng(name: String) : General(name, 4, Identity.LOYALIST, LoyalistStrateg
     }
 }
 
+class HUANGGai(name: String) : WeiGeneral(name, 4) {
+    override fun playPhase() {
+        // 自动触发苦肉机制
+        while (currentHP > 1) {
+            println("$name activates [Bitter Flesh]")
+
+            // 失去1点体力
+            currentHP--
+
+            // 摸两张牌
+            numOfCards += 2
+            println("$name loses 1 HP (Current HP: $currentHP) and draws 2 cards. Now has $numOfCards cards.")
+
+            // 处理濒死状态
+            if (currentHP == 0) {
+                println("$name is dying!")
+                if (usePeach() || useWine()) {
+                    println("$name saved by Peach/Wine! Current HP: $currentHP")
+                } else {
+                    println("No salvation... $name dies!")
+                    break
+                }
+            }
+        }
+
+        // 剩余行动力执行常规攻击
+        super.playPhase()
+    }
+
+    override fun toString(): String {
+        return "$name, a ${identity.name.lowercase()} (Bitter Flesh)"
+    }
+}
+
 //class ZHOUYu(name: String) : WeiGeneral(name, 4) {
 //    override fun judgmentPhase() {
 //        println("$name activates [Captivating Beauty]")
