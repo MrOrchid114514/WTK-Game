@@ -1,7 +1,8 @@
 import java.lang.reflect.Type
+import javax.swing.text.Position
 
 abstract class General(override val name : String, override var maxHP: Int, override val identity: Identity,
-                       override val strategy: Strategy) : Player {
+                       override val strategy: Strategy, override val position: Int) : Player {
     override var currentHP: Int = 0
     override var numOfCards: Int = 4
     override var skipPlayPhase: Boolean = false
@@ -37,6 +38,7 @@ interface Player {
     var skipPlayPhase: Boolean
     val identity: Identity
     val strategy: Strategy
+    val position: Int
 
     fun hasAttackCard(): Boolean {
         val chance = (1..100).random()
@@ -163,7 +165,7 @@ interface Player {
     fun judgmentPhase() {}
 }
 
-class CAOCao(name: String) : General(name, 5, Identity.LORD, LordStrategy()) {
+class CAOCao(name: String) : General(name, 5, Identity.LORD, LordStrategy(), 1) {
     var weiChain: WeiGeneral? = null
     override fun beingAttacked() {
         println("$name is being attacked.")
@@ -180,7 +182,7 @@ class CAOCao(name: String) : General(name, 5, Identity.LORD, LordStrategy()) {
     }
 }
 
-class LIUBei(name: String) : General(name, 1, Identity.LORD, LiuBeiStrategy()) {
+class LIUBei(name: String) : General(name, 1, Identity.LORD, LiuBeiStrategy(), 0) {
     private var currentState: State = if (currentHP >= 2) HealthyState() else UnhealthyState()
 
     fun checkHealthState() {
@@ -203,37 +205,7 @@ class LIUBei(name: String) : General(name, 1, Identity.LORD, LiuBeiStrategy()) {
     }
 }
 
-class SUNQuan(name: String) : General(name, 5, Identity.LORD, LordStrategy()) {}
-
-class SIMaYi(name: String) : WeiGeneral(name, 3)
-
-class XIAHouDun(name: String) : WeiGeneral(name, 4)
-
-class ZHANGLiao(name: String) : WeiGeneral(name, 4) {
-    override fun drawPhase() {
-        // 放弃正常摸牌，发动突袭
-        println("$name activates [Raid]")
-
-        val validTargets = GeneralManager.list
-            .filter { it != this && it.numOfCards > 0 }
-            .shuffled()
-            .take(2)  // 随机选择最多2名有手牌的角色
-
-        validTargets.forEach { target ->
-            target.numOfCards--
-            numOfCards++
-            println("[Raid] Stole 1 card from ${target.name}") // 统一技能提示格式
-        }
-
-        if (validTargets.isEmpty()) {
-            println("[Raid] No valid targets found") // 处理空目标情况
-        }
-    }
-
-    override fun toString(): String {
-        return "$name, a ${identity.name.lowercase()} (Raid)" // 显示技能标识
-    }
-}
+class SUNQuan(name: String) : General(name, 5, Identity.LORD, LordStrategy(),0) {}
 
 class XUChu(name: String) : WeiGeneral(name, 4) {
     override fun playPhase() {
@@ -249,7 +221,11 @@ class XUChu(name: String) : WeiGeneral(name, 4) {
     }
 }
 
-class ZHENJi(name: String) : General(name, 3, Identity.REBEL, RebelStrategy()) {
+class XIAHouDun(name: String) : WeiGeneral(name, 4)
+
+class SIMaYi(name: String) : WeiGeneral(name, 3)
+
+class ZHENJi(name: String) : General(name, 3, Identity.SPY, SpyStrategy(), 3) {
     // 洛神技能参数（黑牌成功率50%，最大判定次数5次）
     private val divineGraceSuccessRate = 50
     private val maxDivineGraceAttempts = 5
@@ -292,11 +268,22 @@ class ZHENJi(name: String) : General(name, 3, Identity.REBEL, RebelStrategy()) {
     }
 }
 
+class DiaoChan(name: String) : General(name, 3, Identity.SPY, SpyStrategy(), 3) {
+    override fun discardPhase() {
+        super.discardPhase()
+        numOfCards++
+        println("[Beauty Outshining the Moon] $name now has $numOfCards card(s).")
+    }
+}
+
+class LVBu(name: String) : General(name, 4, Identity.REBEL, RebelStrategy(), 4) {
+}
+
 class GUANYu{
     val maximumHP = 4
 }
 
-class GUANYuAdapter(name: String) : General(name, 4, Identity.LOYALIST, LoyalistStrategy()) {
+class GUANYuAdapter(name: String) : General(name, 4, Identity.LOYALIST, LoyalistStrategy(), 2) {
     private val guanYu = GUANYu()
 
     override val name: String = "GUAN Yu"
@@ -319,7 +306,10 @@ class GUANYuAdapter(name: String) : General(name, 4, Identity.LOYALIST, Loyalist
     }
 }
 
-class ZHANGFei(name: String) : General(name, 4, Identity.REBEL, RebelStrategy()) {
+class ZHUGeLiang(name: String) : General(name, 3, Identity.SPY, SpyStrategy(), 3) {
+}
+
+class ZHANGFei(name: String) : General(name, 4, Identity.REBEL, RebelStrategy(), 4) {
     override fun playPhase() {
         // 咆哮：出牌阶段可以无限出杀（只要手牌足够）
         var attackCount = 0
@@ -340,7 +330,54 @@ class ZHANGFei(name: String) : General(name, 4, Identity.REBEL, RebelStrategy())
     }
 }
 
-class ZHAOYun(name: String) : General(name, 4, Identity.LOYALIST, LoyalistStrategy()) {
+//class ZHOUYu(name: String) : WeiGeneral(name, 4) {
+//    override fun judgmentPhase() {
+//        println("$name activates [Captivating Beauty]")
+//        val captivatingBeautySuccess = (1..100).random() <= captivatingBeautyMultiplier
+//        if (captivatingBeautySuccess) {
+//            println("$name gains 1 card.")
+//            numOfCards++
+//        } else {
+//            println("$name loses 1 card.")
+//            numOfCards--
+//        }
+//    }
+//}
+class ZHOUYu(name: String) : General(name, 3, Identity.SPY, SpyStrategy(), 3) {
+    override fun drawPhase() {
+        val drawnCards = 3
+        numOfCards += drawnCards
+        println("[Heroism] $name draws $drawnCards cards and now has $numOfCards card(s).")
+    }
+}
+
+class ZHANGLiao(name: String) : WeiGeneral(name, 4) {
+    override fun drawPhase() {
+        // 放弃正常摸牌，发动突袭
+        println("$name activates [Raid]")
+
+        val validTargets = GeneralManager.list
+            .filter { it != this && it.numOfCards > 0 }
+            .shuffled()
+            .take(2)  // 随机选择最多2名有手牌的角色
+
+        validTargets.forEach { target ->
+            target.numOfCards--
+            numOfCards++
+            println("[Raid] Stole 1 card from ${target.name}") // 统一技能提示格式
+        }
+
+        if (validTargets.isEmpty()) {
+            println("[Raid] No valid targets found") // 处理空目标情况
+        }
+    }
+
+    override fun toString(): String {
+        return "$name, a ${identity.name.lowercase()} (Raid)" // 显示技能标识
+    }
+}
+
+class ZHAOYun(name: String) : General(name, 4, Identity.LOYALIST, LoyalistStrategy(), 2) {
 
     // 龙胆技能实现：杀闪互转
     override fun hasAttackCard(): Boolean {
@@ -366,7 +403,7 @@ class ZHAOYun(name: String) : General(name, 4, Identity.LOYALIST, LoyalistStrate
     }
 }
 
-class GANNing(name: String) : General(name, 4, Identity.REBEL, RebelStrategy()) {
+class GANNing(name: String) : General(name, 4, Identity.REBEL, RebelStrategy(), 3) {
     // 奇袭技能参数
     private val surpriseAttackThreshold = 45 // 每张黑牌发动概率45%
     private val maxSurpriseAttempts = 3      // 最大发动次数限制
@@ -409,7 +446,7 @@ class GANNing(name: String) : General(name, 4, Identity.REBEL, RebelStrategy()) 
     }
 }
 
-class LVMeng(name: String) : General(name, 4, Identity.LOYALIST, LoyalistStrategy()) {
+class LVMeng(name: String) : General(name, 4, Identity.LOYALIST, LoyalistStrategy(), 2 ) {
     private var killUsed = false // 标记本回合是否使用过【杀】
 
     override fun playPhase() {
@@ -473,35 +510,6 @@ class HUANGGai(name: String) : WeiGeneral(name, 4) {
 
     override fun toString(): String {
         return "$name, a ${identity.name.lowercase()} (Bitter Flesh)"
-    }
-}
-
-//class ZHOUYu(name: String) : WeiGeneral(name, 4) {
-//    override fun judgmentPhase() {
-//        println("$name activates [Captivating Beauty]")
-//        val captivatingBeautySuccess = (1..100).random() <= captivatingBeautyMultiplier
-//        if (captivatingBeautySuccess) {
-//            println("$name gains 1 card.")
-//            numOfCards++
-//        } else {
-//            println("$name loses 1 card.")
-//            numOfCards--
-//        }
-//    }
-//}
-class ZHOUYu(name: String) : General(name, 3, Identity.SPY, SpyStrategy()) {
-    override fun drawPhase() {
-        val drawnCards = 3
-        numOfCards += drawnCards
-        println("[Heroism] $name draws $drawnCards cards and now has $numOfCards card(s).")
-    }
-}
-
-class DiaoChan(name: String) : General(name, 3, Identity.SPY, SpyStrategy()) {
-    override fun discardPhase() {
-        super.discardPhase()
-        numOfCards++
-        println("[Beauty Outshining the Moon] $name now has $numOfCards card(s).")
     }
 }
 
