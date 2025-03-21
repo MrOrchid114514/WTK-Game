@@ -366,6 +366,49 @@ class ZHAOYun(name: String) : General(name, 4, Identity.LOYALIST, LoyalistStrate
     }
 }
 
+class GANNing(name: String) : General(name, 4, Identity.REBEL, RebelStrategy()) {
+    // 奇袭技能参数
+    private val surpriseAttackThreshold = 45 // 每张黑牌发动概率45%
+    private val maxSurpriseAttempts = 3      // 最大发动次数限制
+
+    override fun playPhase() {
+        var attackCount = 0
+        // 优先发动奇袭技能
+        repeat(maxSurpriseAttempts) {
+            if (canSurpriseAttack()) {
+                executeSurpriseAttack()
+                attackCount++
+            }
+        }
+        // 剩余行动力执行普通攻击
+        if (attackCount == 0) super.playPhase()
+    }
+
+    private fun canSurpriseAttack(): Boolean {
+        // 需要同时满足：有手牌、概率触发、存在可攻击目标
+        return numOfCards > 0 &&
+                (1..100).random() <= surpriseAttackThreshold &&
+                GeneralManager.list.any { it != this && it.numOfCards > 0 }
+    }
+
+    private fun executeSurpriseAttack() {
+        val target = strategy.whomToAttack(
+            this,
+            GeneralManager.list.filter { it != this && it.numOfCards > 0 }
+        )
+        target?.apply {
+            println("[$name] uses [Surprise Attack] on ${target.name}")
+            numOfCards-- // 弃置黑牌
+            target.numOfCards = (target.numOfCards - 1).coerceAtLeast(0) // 目标弃牌
+            println("${target.name} discards 1 card (Remaining: ${target.numOfCards})")
+        }
+    }
+
+    override fun toString(): String {
+        return "$name, a ${identity.name.lowercase()} (Surprise Attack)"
+    }
+}
+
 //class ZHOUYu(name: String) : WeiGeneral(name, 4) {
 //    override fun judgmentPhase() {
 //        println("$name activates [Captivating Beauty]")
