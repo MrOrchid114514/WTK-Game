@@ -1,7 +1,7 @@
 import java.lang.reflect.Type
 import javax.swing.text.Position
 
-abstract class General(override val name : String, override var maxHP: Int, override val identity: Identity,
+abstract class General(override val name : String, override var maxHP: Int, gender: Int, override val identity: Identity,
                        override val strategy: Strategy, override val position: Int) : Player {
     override var currentHP: Int = 0
     override var numOfCards: Int = 4
@@ -165,7 +165,7 @@ interface Player {
     fun judgmentPhase() {}
 }
 
-class CAOCao(name: String) : General(name, 5, Identity.LORD, LordStrategy(), 1) {
+class CAOCao(name: String) : General(name, 5, 1, Identity.LORD, LordStrategy(), 1) {
     var weiChain: WeiGeneral? = null
     override fun beingAttacked() {
         println("$name is being attacked.")
@@ -182,7 +182,7 @@ class CAOCao(name: String) : General(name, 5, Identity.LORD, LordStrategy(), 1) 
     }
 }
 
-class LIUBei(name: String) : General(name, 1, Identity.LORD, LiuBeiStrategy(), 0) {
+class LIUBei(name: String) : General(name, 1, 1, Identity.LORD, LiuBeiStrategy(), 0) {
     private var currentState: State = if (currentHP >= 2) HealthyState() else UnhealthyState()
 
     fun checkHealthState() {
@@ -205,7 +205,7 @@ class LIUBei(name: String) : General(name, 1, Identity.LORD, LiuBeiStrategy(), 0
     }
 }
 
-class SUNQuan(name: String) : General(name, 5, Identity.LORD, LordStrategy(),0) {}
+class SUNQuan(name: String) : General(name, 5, 1, Identity.LORD, LordStrategy(),0) {}
 
 class XUChu(name: String) : WeiGeneral(name, 4) {
     override fun playPhase() {
@@ -225,7 +225,7 @@ class XIAHouDun(name: String) : WeiGeneral(name, 4)
 
 class SIMaYi(name: String) : WeiGeneral(name, 3)
 
-class ZHENJi(name: String) : General(name, 3, Identity.SPY, SpyStrategy(), 3) {
+class ZHENJi(name: String) : General(name, 3, 0, Identity.SPY, SpyStrategy(), 3) {
     // 洛神技能参数（黑牌成功率50%，最大判定次数5次）
     private val divineGraceSuccessRate = 50
     private val maxDivineGraceAttempts = 5
@@ -268,7 +268,7 @@ class ZHENJi(name: String) : General(name, 3, Identity.SPY, SpyStrategy(), 3) {
     }
 }
 
-class DiaoChan(name: String) : General(name, 3, Identity.SPY, SpyStrategy(), 3) {
+class DiaoChan(name: String) : General(name, 3, 0, Identity.SPY, SpyStrategy(), 3) {
     override fun discardPhase() {
         super.discardPhase()
         numOfCards++
@@ -276,14 +276,14 @@ class DiaoChan(name: String) : General(name, 3, Identity.SPY, SpyStrategy(), 3) 
     }
 }
 
-class LVBu(name: String) : General(name, 4, Identity.REBEL, RebelStrategy(), 4) {
+class LVBu(name: String) : General(name, 4, 1, Identity.REBEL, RebelStrategy(), 4) {
 }
 
 class GUANYu{
     val maximumHP = 4
 }
 
-class GUANYuAdapter(name: String) : General(name, 4, Identity.LOYALIST, LoyalistStrategy(), 2) {
+class GUANYuAdapter(name: String) : General(name, 4, 1, Identity.LOYALIST, LoyalistStrategy(), 2) {
     private val guanYu = GUANYu()
 
     override val name: String = "GUAN Yu"
@@ -306,10 +306,10 @@ class GUANYuAdapter(name: String) : General(name, 4, Identity.LOYALIST, Loyalist
     }
 }
 
-class ZHUGeLiang(name: String) : General(name, 3, Identity.SPY, SpyStrategy(), 3) {
+class ZHUGeLiang(name: String) : General(name, 3, 1, Identity.SPY, SpyStrategy(), 3) {
 }
 
-class ZHANGFei(name: String) : General(name, 4, Identity.REBEL, RebelStrategy(), 4) {
+class ZHANGFei(name: String) : General(name, 4, 1, Identity.REBEL, RebelStrategy(), 4) {
     override fun playPhase() {
         // 咆哮：出牌阶段可以无限出杀（只要手牌足够）
         var attackCount = 0
@@ -343,7 +343,7 @@ class ZHANGFei(name: String) : General(name, 4, Identity.REBEL, RebelStrategy(),
 //        }
 //    }
 //}
-class ZHOUYu(name: String) : General(name, 3, Identity.SPY, SpyStrategy(), 3) {
+class ZHOUYu(name: String) : General(name, 3, 1, Identity.SPY, SpyStrategy(), 3) {
     override fun drawPhase() {
         val drawnCards = 3
         numOfCards += drawnCards
@@ -377,7 +377,7 @@ class ZHANGLiao(name: String) : WeiGeneral(name, 4) {
     }
 }
 
-class ZHAOYun(name: String) : General(name, 4, Identity.LOYALIST, LoyalistStrategy(), 2) {
+class ZHAOYun(name: String) : General(name, 4, 1, Identity.LOYALIST, LoyalistStrategy(), 2) {
 
     // 龙胆技能实现：杀闪互转
     override fun hasAttackCard(): Boolean {
@@ -403,7 +403,7 @@ class ZHAOYun(name: String) : General(name, 4, Identity.LOYALIST, LoyalistStrate
     }
 }
 
-class GANNing(name: String) : General(name, 4, Identity.REBEL, RebelStrategy(), 3) {
+class GANNing(name: String) : General(name, 4, 1, Identity.REBEL, RebelStrategy(), 3) {
     // 奇袭技能参数
     private val surpriseAttackThreshold = 45 // 每张黑牌发动概率45%
     private val maxSurpriseAttempts = 3      // 最大发动次数限制
@@ -446,7 +446,7 @@ class GANNing(name: String) : General(name, 4, Identity.REBEL, RebelStrategy(), 
     }
 }
 
-class LVMeng(name: String) : General(name, 4, Identity.LOYALIST, LoyalistStrategy(), 2 ) {
+class LVMeng(name: String) : General(name, 4, 1, Identity.LOYALIST, LoyalistStrategy(), 2 ) {
     private var killUsed = false // 标记本回合是否使用过【杀】
 
     override fun playPhase() {
