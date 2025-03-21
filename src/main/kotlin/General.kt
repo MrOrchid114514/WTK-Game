@@ -209,15 +209,15 @@ class ZHAOYun(name: String) : General(name, 4, Identity.LOYALIST, LoyalistStrate
 
     // 龙胆技能实现：杀闪互转
     override fun hasAttackCard(): Boolean {
-        // 攻击时可使用杀或闪，概率提升至35%每张牌（标准武将的1.75倍）
+        // 攻击时可使用杀或闪，概率提升至35%每张牌（杀20% + 闪15%）
         val chance = (1..100).random()
         return chance <= 35 * numOfCards
     }
 
     override fun hasDodgeCard(): Boolean {
-        // 闪避时可使用闪或杀，概率提升至30%每张牌（标准武将的2倍）
+        // 闪避时可使用闪或杀，概率提升至35%每张牌（闪15% + 杀20%）
         val chance = (1..100).random()
-        return chance <= 30 * numOfCards
+        return chance <= 35 * numOfCards
     }
 
     override fun toString(): String {
@@ -234,4 +234,3 @@ class ZHAOYun(name: String) : General(name, 4, Identity.LOYALIST, LoyalistStrate
 class SimaYi(name: String) : WeiGeneral(name, 3)
 class XiahouDun(name: String) : WeiGeneral(name, 4)
 class XiahouYuan(name: String) : WeiGeneral(name, 4)
-
