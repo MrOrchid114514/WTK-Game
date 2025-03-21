@@ -163,6 +163,23 @@ interface Player {
     fun judgmentPhase() {}
 }
 
+class CAOCao(name: String) : General(name, 5, Identity.LORD, LordStrategy()) {
+    var weiChain: WeiGeneral? = null
+    override fun beingAttacked() {
+        println("$name is being attacked.")
+        println("[Entourage] $name activates Lord Skill Entourage.")
+        if (weiChain?.handleRequest() != true) {
+            val dodgeSuccess = hasDodgeCard()
+            (strategy as? LordStrategy)?.notifyObservers(dodgeSuccess)
+            if (!dodgeSuccess) {
+                currentHP--
+                println("$name couldn't dodge the attack and loses 1 HP. Current HP: $currentHP")
+            }
+        }
+
+    }
+}
+
 class LIUBei(name: String) : General(name, 1, Identity.LORD, LiuBeiStrategy()) {
     private var currentState: State = if (currentHP >= 2) HealthyState() else UnhealthyState()
 
@@ -186,24 +203,25 @@ class LIUBei(name: String) : General(name, 1, Identity.LORD, LiuBeiStrategy()) {
     }
 }
 
-class CAOCao(name: String) : General(name, 5, Identity.LORD, LordStrategy()) {
-    var weiChain: WeiGeneral? = null
-    override fun beingAttacked() {
-        println("$name is being attacked.")
-        println("[Entourage] $name activates Lord Skill Entourage.")
-        if (weiChain?.handleRequest() != true) {
-            val dodgeSuccess = hasDodgeCard()
-            (strategy as? LordStrategy)?.notifyObservers(dodgeSuccess)
-            if (!dodgeSuccess) {
-                currentHP--
-                println("$name couldn't dodge the attack and loses 1 HP. Current HP: $currentHP")
+class SUNQuan(name: String) : General(name, 5, Identity.LORD, LordStrategy()) {}
+
+class SimaYi(name: String) : WeiGeneral(name, 3)
+
+class XiahouDun(name: String) : WeiGeneral(name, 4)
+
+class XuChu(name: String) : WeiGeneral(name, 4) {
+    override fun playPhase() {
+        super.playPhase()
+        if (hasAttackCard()) {
+            val target = strategy.whomToAttack(this, GeneralManager.list.filter { it != this })
+            if (target != null) {
+                println("$name spends a card to attack ${target.identity}, ${target.name}")
+                numOfCards--
+                target.beingAttacked()
             }
         }
-
     }
 }
-
-class SUNQuan(name: String) : General(name, 5, Identity.LORD, LordStrategy()) {}
 
 class ZHENJi(name: String) : General(name, 3, Identity.REBEL, RebelStrategy()) {
     // 洛神技能参数（黑牌成功率50%，最大判定次数5次）
@@ -248,14 +266,6 @@ class ZHENJi(name: String) : General(name, 3, Identity.REBEL, RebelStrategy()) {
     }
 }
 
-class DiaoChan(name: String) : General(name, 3, Identity.SPY, SpyStrategy()) {
-    override fun discardPhase() {
-        super.discardPhase()
-        numOfCards++
-        println("[Beauty Outshining the Moon] $name now has $numOfCards card(s).")
-    }
-}
-
 class GUANYu{
     val maximumHP = 4
 }
@@ -283,16 +293,7 @@ class GUANYuAdapter(name: String) : General(name, 4, Identity.LOYALIST, Loyalist
     }
 }
 
-class ZHOUYu(name: String) : General(name, 3, Identity.SPY, SpyStrategy()) {
-    override fun drawPhase() {
-        val drawnCards = 3
-        numOfCards += drawnCards
-        println("[Heroism] $name draws $drawnCards cards and now has $numOfCards card(s).")
-    }
-}
-
 class ZHANGFei(name: String) : General(name, 4, Identity.REBEL, RebelStrategy()) {
-
     override fun playPhase() {
         // 咆哮：出牌阶段可以无限出杀（只要手牌足够）
         var attackCount = 0
@@ -339,7 +340,34 @@ class ZHAOYun(name: String) : General(name, 4, Identity.LOYALIST, LoyalistStrate
     }
 }
 
-class SimaYi(name: String) : WeiGeneral(name, 3)
-class XiahouDun(name: String) : WeiGeneral(name, 4)
+//class ZHOUYu(name: String) : WeiGeneral(name, 4) {
+//    override fun judgmentPhase() {
+//        println("$name activates [Captivating Beauty]")
+//        val captivatingBeautySuccess = (1..100).random() <= captivatingBeautyMultiplier
+//        if (captivatingBeautySuccess) {
+//            println("$name gains 1 card.")
+//            numOfCards++
+//        } else {
+//            println("$name loses 1 card.")
+//            numOfCards--
+//        }
+//    }
+//}
+class ZHOUYu(name: String) : General(name, 3, Identity.SPY, SpyStrategy()) {
+    override fun drawPhase() {
+        val drawnCards = 3
+        numOfCards += drawnCards
+        println("[Heroism] $name draws $drawnCards cards and now has $numOfCards card(s).")
+    }
+}
+
+class DiaoChan(name: String) : General(name, 3, Identity.SPY, SpyStrategy()) {
+    override fun discardPhase() {
+        super.discardPhase()
+        numOfCards++
+        println("[Beauty Outshining the Moon] $name now has $numOfCards card(s).")
+    }
+}
+
 class XiahouYuan(name: String) : WeiGeneral(name, 4)
 
