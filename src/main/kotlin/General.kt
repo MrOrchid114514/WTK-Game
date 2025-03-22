@@ -1,3 +1,5 @@
+import java.lang.Math.abs
+import java.lang.Math.max
 import java.lang.reflect.Type
 import javax.swing.text.Position
 
@@ -120,7 +122,11 @@ interface Player {
         }
         return false
     }
-
+    fun beginDistance(target:Player):Int{
+        val distance1 = abs(4-position+target.position-1)
+        val distance2 = abs(position - target.position)
+        return max(distance1,distance2)
+    }
     fun playTurn() {
         drawPhase()
         playPhase()
